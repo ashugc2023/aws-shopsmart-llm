@@ -1,105 +1,86 @@
-AWS LLM Fine-Tuning ShowcaseAWS ML Badge
-![GitHub Repo](https://img.shields.io/badge/GitHub-Repo-green)  This repository showcases an end-to-end machine learning workflow on AWS, demonstrating skills from my AWS Machine Learning Practitioner and Associate certifications. The project fine-tunes a Large Language Model (LLM) using AWS SageMaker JumpStart, processes customer review data, evaluates performance, deploys via pipelines, and presents results through a React frontend hosted on AWS Amplify.Key AWS Services Used: S3, Athena, Glue, SageMaker (Data Wrangler, JumpStart, Experiments, Debugger, Clarify, Pipelines, Endpoints), Amplify.Table of ContentsProject Overview (#project-overview)
-Dataset Description (#dataset-description)
-Prerequisites (#prerequisites)
-Phase 1: Project Setup and Data Preparation (#phase-1-project-setup-and-data-preparation)
-Phase 2: Model Selection and Fine-Tuning (#phase-2-model-selection-and-fine-tuning) (Coming Soon)
-Phase 3: Validation and Performance Evaluation (#phase-3-validation-and-performance-evaluation) (Coming Soon)
-Phase 4: Pipeline Orchestration and Deployment (#phase-4-pipeline-orchestration-and-deployment) (Coming Soon)
-Phase 5: Frontend Development and Presentation (#phase-5-frontend-development-and-presentation) (Coming Soon)
-Results and Learnings (#results-and-learnings) (Coming Soon)
-How to Run (#how-to-run)
-Contributing (#contributing)
-License (#license)
+# AWS LLM Fine-Tuning Showcase&nbsp;![AWS ML Badge](https://img.shields.io/badge/AWS%20ML-Certified-green)&nbsp;![GitHub Repo](https://img.shields.io/badge/GitHub-Repo-brightgreen)
 
-Project OverviewThis project builds a complete MLOps pipeline for fine-tuning an LLM on customer review data. The goal is to create a model that can, for example, classify sentiment or generate review summaries. It follows professional best practices: data preparation with ETL tools, training with pre-built models, validation with monitoring and bias checks, automated deployment, and a user-friendly frontend.Why this project?  Demonstrates scalable ML on AWS.  
-Handles real-world data challenges (e.g., large text datasets).  
-Incorporates ethics (bias detection) and monitoring.  
-End-to-end: From raw data in S3 to a deployed app.
+This repository demonstrates an **end-to-end MLOps workflow on AWS**.  
+We fine-tune a Large Language Model (LLM) with **Amazon SageMaker JumpStart**, process Amazon customer-review data, track experiments, monitor for bias, deploy via pipelines, and surface interactive results in a **React app served by AWS Amplify**.
 
-Architecture Diagram (High-Level):
-Project Architecture
-(Note: Diagram created with Draw.io; export as PNG and add to docs/ folder.)Expected Outcomes:  Fine-tuned LLM with improved performance metrics (e.g., F1-score > 0.85).  
-Deployed SageMaker endpoint.  
-React app for interactive demos.
+> **Key AWS services:** S3 · Athena · Glue · SageMaker (Data Wrangler, JumpStart, Experiments, Debugger, Clarify, Pipelines, Endpoints) · Amplify
 
-Dataset DescriptionWe're using the Amazon US Customer Reviews Dataset from Kaggle. This dataset provides rich text data for NLP tasks like the ones in this project.Source: Kaggle (downloaded via CLI). Original data from Amazon, collected by Julian McAuley (UCSD).  
-Size: ~20-30 GB uncompressed; split into category-specific TSV files (e.g., Books, Electronics). For this project, we'll use a subset (e.g., Electronics category, ~5M reviews) to optimize costs.  
-Contents: Customer reviews with metadata. Ideal for fine-tuning LLMs on tasks like sentiment analysis or text generation.  
-Key Columns:  Column
-Description
-Type
-marketplace
-Market (e.g., US)
-String
-customer_id
-Unique customer ID
-String
-review_id
-Unique review ID
-String
-product_id
-Amazon Standard Identification Number
-String
-product_title
-Product name
-String
-star_rating
-Rating (1-5)
-Integer
-helpful_votes
-Number of helpful votes
-Integer
-review_body
-Full review text
-String
-review_date
-Date of review
-Date
-(Full list in dataset docs on Kaggle.)
+---
 
-Download and Upload Instructions:
-To replicate:  bash
+## Table of Contents
+- [Project Overview](#project-overview)
+- [Dataset Description](#dataset-description)
+- [Prerequisites](#prerequisites)
+- [Phase 1: Project Setup & Data Preparation](#phase-1-project-setup-and-data-preparation)
+- [Phase 2: Model Selection & Fine-Tuning](#phase-2-model-selection-and-fine-tuning-coming-soon)
+- [Phase 3: Validation & Performance Evaluation](#phase-3-validation-and-performance-evaluation-coming-soon)
+- [Phase 4: Pipeline Orchestration & Deployment](#phase-4-pipeline-orchestration-and-deployment-coming-soon)
+- [Phase 5: Front-End Development & Presentation](#phase-5-frontend-development-and-presentation-coming-soon)
+- [Results & Learnings](#results-and-learnings-coming-soon)
+- [How to Run](#how-to-run)
+- [Contributing](#contributing)
+- [License](#license)
 
-# Install Kaggle CLI if needed: pip install kaggle  
-# Ensure ~/.kaggle/kaggle.json has your API token  
-kaggle datasets download -d cynthiarempel/amazon-us-customer-reviews-dataset -p /tmp/reviews --unzip  
-aws s3 cp /tmp/reviews/ s3://shopsmart-data/raw/amazon_reviews/ --recursive  
+---
 
-This uploads the TSV files to S3 bucket shopsmart-data under raw/amazon_reviews/.  
-Usage Notes:  Handle TSV format (tab-separated; use pd.read_csv(..., sep='\t') in Pandas).  
-Potential Issues: Large files—process in chunks; some reviews have HTML/escape characters—clean during ETL.  
-Subset Selection: For efficiency, we'll filter to one category (e.g., Electronics) in Phase 1.  
-Visualization Example: Sentiment distribution from star ratings.
-Sentiment Distribution
+## Project Overview
+This project builds a **production-style MLOps pipeline** to fine-tune an LLM on Amazon customer-review text.  
+The resulting model can classify sentiment, generate summaries, or power other NLP features.
 
-PrerequisitesAWS Account with IAM roles: SageMakerFullAccess, S3FullAccess, GlueFullAccess, AthenaFullAccess.  
-Local Setup: AWS CLI, Python 3+, pip install sagemaker boto3 pandas matplotlib seaborn.  
-SageMaker Studio Domain created.  
-GitHub Repo cloned locally.
+**Why this project?**
+- Showcases *scalable* ML on AWS.
+- Tackles *real-world* challenges ( GB-scale text, noisy inputs ).
+- Bakes in ethics & monitoring (SageMaker Clarify, Debugger).
+- Truly end-to-end: raw data in S3 ➜ deployed model ➜ web demo.
 
-Phase 1: Project Setup and Data PreparationGoal: Ingest raw data into S3, explore, and prepare it for training using AWS ETL tools.Steps Completed:  Repo Setup: Initialized with folders (data-prep/, docs/), .gitignore, and this README.  
-AWS Prerequisites: Configured IAM, installed SDKs. See data-prep/setup.md for details.  
-Dataset Upload: Used Kaggle CLI to download and AWS CLI to upload to s3://shopsmart-data/raw/amazon_reviews/.  Command logs and verification in data-prep/upload-log.txt.
+### Architecture (High-Level)
+[S3] → [Athena / Glue ETL] → [SageMaker Data Wrangler]
+→ [JumpStart LLM Fine-Tune] → [Experiments & Debugger]
+→ [Pipelines] → [SageMaker Endpoint] → [React + Amplify]
+*(Diagram source: `docs/architecture.png`, exported from draw.io.)*
 
-Exploration with Athena: Created database ml_showcase_db, table for reviews. Ran queries for stats (e.g., review counts per category).  Notebook: `data-prep/explore-with-athena.ipynb` (data-prep/explore-with-athena.ipynb)  
-Example Query Results:  Category
-Review Count
-Avg Star Rating
-Electronics
-5,000,000
-4.2
+**Expected Outcomes**
+- Fine-tuned LLM with **F1 ≥ 0.85** on target task.  
+- Managed SageMaker endpoint.  
+- Mobile-friendly React demo.
 
-Graph: Athena query results visualized.
-Athena Results
+---
 
-ETL with Data Wrangler and Glue: Used Data Wrangler for visual cleaning (e.g., remove nulls, tokenize text). Exported to Glue job for scalable processing. Output: Cleaned data in s3://shopsmart-data/processed/amazon_reviews/.  Notebook: `data-prep/data-wrangler-etl.ipynb` (data-prep/data-wrangler-etl.ipynb)  
-Glue Script: `data-prep/glue-etl.py` (data-prep/glue-etl.py)  
-Before/After Graphs: Text length histograms.
-Data Cleaning Hist
+## Dataset Description
+We use the **Amazon US Customer Reviews** dataset.
 
-Learnings: Athena enables quick insights without data movement; Glue scales ETL for big data.Next: Proceed to Phase 2 for fine-tuning.Phase 2: Model Selection and Fine-Tuning(Details to be added after completion.)Phase 3: Validation and Performance Evaluation(Details to be added after completion.)Phase 4: Pipeline Orchestration and Deployment(Details to be added after completion.)Phase 5: Frontend Development and Presentation(Details to be added after completion.)Results and Learnings(Summary metrics, graphs, and key takeaways to be added.)How to RunClone repo: git clone https://github.com/yourusername/aws-llm-finetuning-showcase.git  
-Set up AWS credentials.  
-Run notebooks in SageMaker Studio or locally.  
-For full pipeline: See Phase 4.
+| Property | Details |
+|----------|---------|
+| **Source** | [Kaggle link](https://www.kaggle.com/datasets/cynthiarempel/amazon-us-customer-reviews-dataset) (mirror of UCSD data by Julian McAuley) |
+| **Size** | ≈ 20–30 GB unzipped, category-specific TSV files |
+| **Subset** | **Electronics** (~5 M reviews) to reduce cost |
+| **Use-case** | Sentiment classification / summarization |
 
+### Key Columns
+
+| Column          | Description                                   | Type    |
+|-----------------|-----------------------------------------------|---------|
+| `marketplace`   | Marketplace code (e.g. `US`)                  | string  |
+| `customer_id`   | Unique customer ID                            | string  |
+| `review_id`     | Unique review ID                              | string  |
+| `product_id`    | ASIN                                          | string  |
+| `product_title` | Product name                                  | string  |
+| `star_rating`   | 1-to-5 stars                                  | int     |
+| `helpful_votes` | Helpful-vote count                            | int     |
+| `review_body`   | Full review text                              | string  |
+| `review_date`   | Review date                                   | date    |
+
+### Download & Upload
+
+```bash
+# 1 Install Kaggle CLI (once)
+pip install kaggle
+
+# 2 Ensure you have ~/.kaggle/kaggle.json
+
+# 3 Download & unzip
+kaggle datasets download -d cynthiarempel/amazon-us-customer-reviews-dataset \
+  -p /tmp/reviews --unzip
+
+# 4 Copy to S3
+aws s3 cp /tmp/reviews/ s3://shopsmart-data/raw/amazon_reviews/ --recursive
